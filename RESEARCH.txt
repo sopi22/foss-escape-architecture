@@ -1,6 +1,7 @@
 PULSE EXPERIMENT 001 — RESEARCH LOG
-Phase: 0 (Clarification gate + probe proposal). No implementation code has been written.
-Status: AWAITING OPERATOR CONFIRMATION before Phase 1 (implementation) begins.
+Phase: 1 (implementation + first live run) complete. Probe selection was
+confirmed by the operator on 2026-08-13; see Section 8 for the
+falsification report from the actual runs against the connected device.
 
 ================================================================================
 1. CLARIFICATION GATE (Section 15)
@@ -364,13 +365,132 @@ RESOLVED (2026-08-13) — a physical device is now connected and available
   had to be redone once after an earlier pairing code expired.
 
 ================================================================================
-7. REPRODUCIBILITY (Section 10) — not yet applicable
+7. REPRODUCIBILITY (Section 10)
 ================================================================================
-No probe has been run yet (Phase 0 only). Once Phase 1 begins, each run
-will be logged here at its actual achieved rung (R0–R3); no generality
-claim will be made beyond the evidence grade actually achieved.
+FACT — probe_storage_write: run 3 times total against the same device
+  (Samsung Galaxy A53, Android 16/API 36) in this session: once standalone
+  during test execution, once via `pulse-run` run 1, once via `pulse-run`
+  run 2. All three PASS. Additionally run once with a deliberately
+  unwritable path and correctly returned FAIL (proves the probe
+  distinguishes FAIL from PASS, not just always-PASS).
+  Reproducibility achieved: R1 (reproduced, same environment, same
+  session). Not yet R2 (separate runs, i.e. a genuinely separate terminal
+  session/day) or R3 (separate environment/device). No generality claim
+  beyond R1 is made.
+FACT — probe_settings_persist: run 2 times against the same device
+  (`pulse-run` run 1 and run 2). Both PASS.
+  Reproducibility achieved: R1, same caveats as above.
+DECISION — not attempting R2/R3 in this session. That requires a later,
+  genuinely separate session (and ideally a second device for R3) rather
+  than repeating the same command back-to-back, which would not add real
+  evidence.
 
 ================================================================================
-END OF PHASE 0 DELIVERABLE — STOPPING HERE PER INSTRUCTION.
-Awaiting operator confirmation before any implementation code is written.
+8. FALSIFICATION REPORT (Section 13 deliverable)
+================================================================================
+
+QUESTION:
+Do behavioral probes for storage-write and settings-provider-persist
+assumptions surface anything beyond what conventional metadata already
+implies, on this device?
+
+ASSUMPTIONS TESTED:
+  - storage_write: a file can be written to and read back from
+    /sdcard/pulse_probe_test via adb shell.
+  - settings_persist: a value written to a custom key in the `global`
+    settings namespace via adb shell persists on immediate read-back.
+
+BASELINE (recorded in Section 5/per-probe sections above, before
+running):
+  - storage_write: metadata (API level 36) predicts scoped storage is
+    fully enforced; conventional wisdom offers a prediction, not an
+    observation, about whether this specific legacy-style path would
+    still be writable.
+  - settings_persist: no metadata baseline exists at all for whether an
+    OEM layer silently reverts a settings-provider write — this is the
+    "entirely absent from conventional metadata" case named in advance.
+
+OBSERVED RESULT (actual, from live runs against the Samsung Galaxy A53,
+Android 16/API 36, recorded above):
+  - storage_write: PASS (write+read-back matched) on 3/3 normal runs;
+    correctly FAILs when pointed at an unwritable path.
+  - settings_persist: PASS (put+get matched) on 2/2 runs.
+
+NOVEL INFORMATION BEYOND BASELINE:
+  - storage_write: the behavioral result (PASS) is MORE SPECIFIC than the
+    metadata-only prediction -- API level alone does not tell you whether
+    this exact path is writable right now on this exact device; the probe
+    does. On this device/build, the API-level-36 "should be restricted"
+    inference was not contradicted, but the probe is what actually
+    confirmed the specific path's live state rather than assuming it.
+  - settings_persist: the behavioral result (PASS) is information that
+    was ENTIRELY ABSENT from any available metadata, exactly the strong
+    case named in advance -- there is no OS-exposed flag stating whether
+    this OEM's settings layer honors third-party writes to custom global
+    keys. The probe is the only way this was known.
+
+CONFOUNDERS CONSIDERED:
+  - Only one device/build tested (Samsung, One UI on Android 16) -- OEM-
+    specific behavior on this exact skin cannot be generalized to other
+    OEMs from this evidence alone.
+  - adb shell runs as the `shell` UID, not an installed app's sandboxed
+    UID -- both probes establish an environment-level fact, not proof
+    that an installed app's runtime-permission-gated calls would behave
+    identically (stated as a limitation in each probe's research log,
+    Section 5).
+  - All runs happened within a few minutes of each other, same network,
+    same device-awake state -- no evidence yet on behavior across a
+    reboot, a Doze/idle cycle, or a different time of day.
+  - Probe-implementation-error risk: mitigated for FAIL-detection
+    specifically by the deliberate FAIL-case test (storage_write against
+    an unwritable path), which passed -- i.e. the harness itself is not
+    silently incapable of reporting FAIL. No equivalent deliberate
+    FAIL-case was run for settings_persist in this session (the
+    `skip_write` parameter exists in the code for this but wasn't
+    exercised as a live-device test) -- flagged here as an honest gap
+    rather than assumed to work by analogy.
+
+REPRODUCIBILITY LEVEL ACHIEVED: R1 for both probes (see Section 7).
+
+FALSE POSITIVES: none observed in this session -- no case where a probe
+  reported PASS for something that was actually broken (no independent
+  ground truth beyond the probe itself was checked here, so this is
+  bounded by session length and instrumentation, not a strong claim).
+
+FALSE NEGATIVES: none observed for storage_write (its one designed
+  FAIL case correctly failed). Not evaluated for settings_persist in this
+  session -- see confounders above.
+
+WHAT WOULD CHANGE OUR MIND (as stated in advance, Section 3): a case
+  where behavioral observation diverged from what metadata implied would
+  strengthen H1; observations that always tracked metadata 1:1 would
+  weaken it. Both probes surfaced information metadata didn't have
+  (settings_persist entirely, storage_write more specifically) -- this
+  supports H1 on the evidence-value question, though at R1, not a
+  generalizable claim yet.
+
+CONCLUSION: WEAKLY SUPPORTED.
+  H1 is supported in kind (both probes produced information beyond
+  metadata) but only at R1 reproducibility, on a single device/OEM, and
+  with the settings_persist FAIL-detection gap noted above. "Weakly" is
+  the honest grade here -- not "supported," which would overstate one
+  session on one device.
+
+RECOMMENDED NEXT EXPERIMENT:
+  1. Re-run both probes in a genuinely separate session (different day)
+     on the same device to reach R2, and specifically test
+     settings_persist's `skip_write` FAIL case live to close the false-
+     negative gap noted above.
+  2. If a second Android device (different OEM) becomes available, repeat
+     for R3 -- this is the evidence that would actually let a claim
+     generalize beyond "this one Samsung device."
+  3. Only after R2/R3 evidence exists, consider whether the previously
+     rejected clipboard-background-read probe (Section 5, rejected
+     candidates) is worth a dedicated follow-up experiment that
+     explicitly budgets for a companion test APK -- it was the strongest
+     candidate rejected here purely on dependency-budget grounds, not on
+     scientific merit.
+
+================================================================================
+END OF PHASE 1 DELIVERABLE.
 ================================================================================

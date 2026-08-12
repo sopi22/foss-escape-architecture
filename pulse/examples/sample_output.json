@@ -1,0 +1,7 @@
+{
+  "assumption": "storage_write",
+  "observation": "PASS",
+  "detail": "write+read-back matched",
+  "timestamp": "2026-08-13T00:00:00+00:00",
+  "comparison": "NEW"
+}

@@ -31,26 +31,26 @@ something to build.
 
 CURRENT PHASE
 --------------
-Phase 0 — clarification gate and probe proposal only. No implementation
-code exists yet. See RESEARCH.txt for the full novelty-firewall analysis,
-hypothesis framing, and the two proposed probes (probe_storage_write,
-probe_settings_persist) with their justification.
+Phase 1 complete — both confirmed probes are implemented and have been
+run against a real device (Samsung Galaxy A53, Android 16/API 36), with
+a falsification report recorded from those actual runs. See RESEARCH.txt
+Section 8 for the report; conclusion so far is WEAKLY SUPPORTED at R1
+reproducibility (one device, one session) — see Section 7 for what R2/R3
+would require and Section 8's recommended next experiment.
 
-What unlocks Phase 1 (implementation): explicit operator confirmation of
-the probe selection in RESEARCH.txt, per this experiment's brief
-("wait for my confirmation before proceeding to implementation").
-
-Phase 1 also needs an actual Android target to run probes against — this
-is now resolved: a physical device (Samsung Galaxy A53, Android 16) is
-reachable over adb via Wireless debugging. See RESEARCH.txt, Section 6,
-for connection details and the one caveat (the WiFi adb session may need
-reconnecting in a future terminal session).
+What unlocks the next phase: a second, genuinely separate-session run
+(R2), and ideally a second device of a different make (R3) — neither has
+happened yet, so no claim beyond R1 is made anywhere in this project.
 
 SETUP / RUN
 ------------
-Not applicable yet — no implementation exists. This section will be
-replaced with exact, copy-pasteable setup and run commands once Phase 1
-begins.
+See pulse/README.txt for exact, copy-pasteable setup and run commands.
+Short version:
+    cd pulse
+    python3 -m venv .venv && source .venv/bin/activate
+    pip install -e ".[dev]"
+    pytest                                    # run the test suite
+    pulse-run --serial <serial-from-adb-devices>   # run the probes
 
 AUTHOR
 ------

@@ -1,0 +1,24 @@
+[project]
+name = "pulse"
+version = "0.1.0"
+description = "Pulse Experiment 001 -- behavioral compatibility-assumption probes over adb"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+# pytest is the one dependency beyond stdlib in this project, and it is
+# test-only -- the runtime package (pulse itself) has zero third-party
+# dependencies. Justification: a test framework is standard, low-entropy
+# infrastructure, not a project-specific abstraction; hand-rolling
+# assertions/test discovery would cost more than it saves.
+dev = ["pytest>=7"]
+
+[project.scripts]
+pulse-run = "pulse.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
