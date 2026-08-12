@@ -1,0 +1,378 @@
+PULSE EXPERIMENT 001 — RESEARCH LOG
+Phase: 0 (Clarification gate + probe proposal). No implementation code has been written.
+Status: AWAITING OPERATOR CONFIRMATION before Phase 1 (implementation) begins.
+
+================================================================================
+1. CLARIFICATION GATE (Section 15)
+================================================================================
+
+Q: What is H1, and what is H0?
+A: See Section 3 below (Hypothesis framing).
+
+Q: What existing systems were checked under the novelty firewall, and what's
+   the residual gap?
+A: See Section 2 below (Novelty firewall).
+
+Q: What vocabulary is locked, and what's explicitly forbidden?
+A: Locked (as specified in the brief): assumption, probe, observation,
+   environment, comparison.
+   Forbidden: capability, provider, fallback, broker, privilege, cost — and by
+   extension any other term implying an architecture/abstraction not yet
+   earned by evidence (e.g. "manager", "engine", "orchestrator", "service"
+   used as a Pulse-internal concept name).
+
+Q: What are the entropy budget numbers for this specific project?
+A: As specified in the brief (Minimum Implementation section) — carried
+   forward verbatim, not modified:
+     Probe types:            3 maximum
+     Persistent formats:     1
+     Transport:               1 (adb)
+     External services:      0
+     Background processes:   0
+     Network calls from Pulse itself: 0
+     Dependencies: stdlib + one adb wrapper only; anything beyond that
+       must be justified in writing before use.
+
+Q: Repo name, public or private?
+A: DECISION — repo name `foss-escape-architecture` (as specified in the
+   brief's repo scope). Visibility: PUBLIC, per the template's stated
+   default ("Default public unless a graded-course or privacy concern
+   applies"). No graded-course constraint or privacy objection was stated
+   for this project, and the template's own instruction on authorship
+   (real-name credit in Copyright/README/About) is consistent with a
+   public portfolio/research artifact. This is a judgment call made on the
+   operator's behalf — flagged explicitly in the final report so it can be
+   overridden to private if that's not actually wanted.
+
+Q: Anything in Sections 3–14 that should explicitly not apply this time?
+A: None identified. All sections apply as written.
+
+================================================================================
+2. NOVELTY FIREWALL (Section 4)
+================================================================================
+
+Applied to the project as a whole, before any implementation.
+
+Existing systems checked:
+
+1. Android Compatibility Test Suite (CTS) / Google's Compatibility
+   Definition Document (CDD).
+   What it solves: OEM/vendor-level certification that a device's OS build
+   conforms to the Android platform spec. Run by manufacturers, not app
+   developers, against a fixed suite defined by Google.
+   Residual gap: CTS certifies the OS build once, at the vendor level. It
+   does not track app/assumption-level behavioral drift over time on a
+   specific device a developer actually has in hand, and it has no notion
+   of a developer-authored, falsifiable "operating assumption" with a
+   PASS/FAIL/UNKNOWN outcome comparable run-over-run.
+
+2. `adb shell dumpsys` / `getprop` / `pm` metadata inspection (the
+   conventional baseline this experiment compares against).
+   What it solves: fast, cheap inspection of declared device/OS state
+   (API level, declared features, granted permissions as recorded by the
+   OS).
+   Residual gap: this is exactly declared/metadata state, which H1 predicts
+   is sometimes insufficient — e.g. OEM policy layers can silently override
+   or diverge from what metadata claims. Metadata inspection cannot, by
+   construction, detect that divergence; only an actual behavioral probe
+   can. This is the core residual gap the experiment targets.
+
+3. Device farms / compatibility matrices (Firebase Test Lab, BrowserStack,
+   etc.).
+   What they solve: running an app's own test suite across many real
+   device/OS combinations, hosted externally.
+   Residual gap: these are external, network-dependent services (violates
+   the entropy budget's "external services: 0" and "network calls: 0"
+   directly), oriented around a specific app's test suite rather than a
+   portable, comparison-over-time assumption ledger, and don't produce the
+   FACT/HYPOTHESIS/DECISION epistemic trail this experiment requires.
+
+4. Espresso / UI Automator / Robolectric / Monkey.
+   What they solve: UI-behavior correctness testing and fuzz/stress testing
+   of a specific app.
+   Residual gap: oriented at app-internal UI correctness, not at
+   standalone, per-assumption environment-compatibility probing that can
+   run without any app installed.
+
+5. Play Integrity API / SafetyNet attestation.
+   What it solves: device/app integrity attestation for anti-abuse
+   purposes.
+   Residual gap: itself a declared/opaque verdict from a remote service —
+   exactly the kind of "advertised capability treated as evidence" H1's
+   epistemic rules explicitly reject as a substitute for direct behavioral
+   observation. Also an external network service, out of budget.
+
+CONCLUSION: no existing system combines (a) developer-defined, falsifiable,
+per-assumption behavioral probes, (b) explicit run-over-run comparison state
+(NEW/UNCHANGED/CHANGED/NO_COMPARISON) as a first-class output, and (c)
+explicit epistemic logging that refuses to treat declared/metadata state as
+evidence of actual behavior. Integrating an existing tool would not close
+this gap — building the minimal probe harness is justified.
+
+Re-applied at probe-selection level below, per-probe, where a candidate
+probe resembled an existing solved problem (background-service liveness,
+network cleartext policy, package-visibility API changes).
+
+================================================================================
+3. RESEARCH HYPOTHESIS FRAMING (Section 5)
+================================================================================
+
+RESEARCH HYPOTHESIS (H1):
+A meaningful subset of software/environment compatibility failures can be
+represented as explicit, falsifiable operating assumptions whose state is
+observable through safe behavioral probes and comparable over time.
+
+NULL HYPOTHESIS (H0):
+Behavioral probing provides no materially useful information beyond
+conventional environment metadata for the compatibility failures tested.
+
+FALSIFICATION CRITERIA:
+If, across the selected probes, the behavioral observation always agrees
+with what conventional metadata (getprop/dumpsys/pm) already implies — i.e.
+the probe never surfaces information that is inconsistent with, more
+specific than, or absent from metadata — that supports H0. This would be a
+complete, successful experiment, not a failed one.
+
+BASELINE:
+For each assumption tested, the conventional-metadata answer is recorded
+first (Section 5 per-probe entries below), before the behavioral probe is
+run, so the comparison is not written after the fact.
+
+WHAT WOULD CHANGE OUR MIND (stated in advance):
+- Toward H1: any probe run where the behavioral observation is PASS/FAIL in
+  a way conventional metadata could not have predicted (metadata says
+  "should work" but probe observes FAIL, or vice versa), reproduced at
+  R1 or higher.
+- Toward H0: probe observations that track metadata 1:1 across repeated
+  runs and environments, with no case of divergence, would weaken H1 and
+  should be reported plainly as such rather than reframed as a tooling
+  problem.
+
+================================================================================
+4. OPERATOR CONTEXT (Section 1)
+================================================================================
+
+Researcher / sole author for attribution purposes: Jhoana Sophia Munar
+  (jhosophie@proton.me, GitHub account "sopi22").
+Project sponsor/operator setting this up: her parent (Trozovka / John
+  Winsome Munar), doing the setup work on her behalf.
+Comfort level with coding/git/dev tooling: not stated by either operator —
+  not assumed here.
+Primary language / English fluency notes: not stated — not assumed here.
+OS and dev environment (FACT, observed directly):
+  - WSL2 Ubuntu 24.04.4 LTS, host is Windows.
+  - Shared laptop; a separate git identity + SSH key already exists for
+    this account (~/.gitconfig-sopi22, ~/.ssh/id_ed25519_sopi22), applied
+    automatically to anything under ~/daughter-projects/.
+  - Android SDK platform-tools/build-tools/cmdline-tools present at
+    ~/android-sdk (API 34 platform installed), but no `emulator` package
+    and no AVD configured — see Section 6, Environment gaps.
+  - Docker is installed on the Windows host but WSL integration for this
+    "Ubuntu" distro is currently OFF (`docker` command not found inside
+    this shell).
+  - The brief mentioned Kali Linux being available; FACT — `wsl -l -v`
+    shows only "Ubuntu" (running) and "docker-desktop" (stopped) currently
+    registered. No Kali distro is present. Noted for accuracy, not
+    currently relevant to this experiment's probe selection.
+Account/plan constraints: none stated.
+GitHub account to use: github.com/sopi22 (display/commit name updated to
+  Jhoana Sophia Munar locally — see final report for what could and
+  couldn't be changed).
+
+================================================================================
+5. PROBE SELECTION AND JUSTIFICATION
+================================================================================
+
+The brief allows "up to 3" probes. Two are proposed here, not three — a
+third pure-adb, no-companion-APK candidate that was meaningfully distinct
+(rather than a near-duplicate of probe 1) was not found; padding to three
+with a weaker or dependency-heavier probe would violate the "MUST NOT
+force-fit" and minimalism rules more than it would satisfy the brief.
+Rejected candidates are logged below with reasoning (Section 9, Confounder
+rule / honesty-over-volume).
+
+--------------------------------------------------------------------------
+PROBE 1 — provisional name: probe_storage_write
+--------------------------------------------------------------------------
+ASSUMPTION UNDER TEST: "A file can be written to and read back from a
+fixed, legacy-style external-storage path on this device/emulator, via
+adb shell, right now."
+
+Why this assumption: scoped storage (Android 10+) is one of the most
+common real-world Android compatibility failure classes — code written
+against pre-scoped-storage assumptions silently breaks, and the actual
+enforcement varies by OEM, API level, and even per-app compatibility
+shims. It is a compatibility failure class in the ordinary sense the
+hypothesis is about.
+
+BASELINE (metadata claim, recorded before probing):
+  `adb shell getprop ro.build.version.sdk` states the API level, from
+  which conventional wisdom infers whether scoped storage "should" be
+  enforced. This is a prediction from metadata, not an observation.
+
+PROBE (behavioral):
+  `adb shell` — write a small marker file to a fixed path (e.g.
+  /sdcard/pulse_probe_test), read it back, delete it. All via plain shell
+  commands, no companion app.
+
+OBSERVATION mapping:
+  PASS — write+read-back succeeded and content matched.
+  FAIL — write or read-back failed, or content mismatched.
+  UNKNOWN — adb itself failed/timed out for a reason unrelated to the
+    write (e.g. device offline) — must not be coded as FAIL.
+
+RESEARCH LOG (per template Section "RESEARCH LOG (per probe...)"):
+  What does this establish? Whether this specific path is actually
+    writable/readable right now, on this specific device/emulator/OS
+    build — a direct behavioral fact.
+  What does it NOT establish? Whether the SAME result holds for a real
+    installed app's own sandboxed storage calls (this probe uses the shell
+    user's own permissions, not an app's runtime-granted permission state)
+    — it establishes an environment-level fact, not an app-level one. This
+    limitation must be stated plainly wherever probe 1's results are used.
+  Alternative explanations for a FAIL: read-only filesystem mount state,
+    full disk, SELinux policy blocking shell writes specifically (distinct
+    from blocking app writes), adb running as a restricted (non-root)
+    shell user on this build.
+  False-positive risk: low — a PASS is a direct, unambiguous observation.
+  False-negative risk: a transient FAIL (disk momentarily full, adb
+    connection hiccup) could be mistaken for a genuine compatibility FAIL
+    if not reproduced — mitigated by the reproducibility ladder (Section
+    7) rather than by trusting a single run.
+  Would UNKNOWN be more honest in some cases? Yes — any adb-transport-level
+    error must map to UNKNOWN, never silently to FAIL.
+  Does it modify device state? Yes, transiently — writes one small file,
+    which the probe itself deletes as its last step. Documented here per
+    Section 9's requirement to record this explicitly.
+  Independently reproducible? Yes — no external state, no prior setup
+    beyond an attached device/emulator.
+
+Novelty-firewall re-check for this probe specifically: resembles no
+existing certified/solved system (scoped-storage compliance is normally
+checked by manually reading platform docs or trial-and-error in-app, not
+by a standalone reusable probe) — proceeding is justified.
+
+--------------------------------------------------------------------------
+PROBE 2 — provisional name: probe_settings_persist
+--------------------------------------------------------------------------
+ASSUMPTION UNDER TEST: "A value written to the Android Settings provider
+via adb shell persists unchanged when read back immediately after."
+
+Why this assumption: aggressive OEM battery/RAM-management layers (common
+on several non-stock Android skins) are known to silently revert or
+override settings-provider writes as part of background "optimization"
+behavior — a real compatibility failure class distinct from probe 1's
+storage-permission class, and one where the divergence between "declared"
+and "actual" state is not visible from static metadata inspection at all
+(there is no metadata flag that says "this OEM layer will revert your
+write").
+
+BASELINE (metadata claim, recorded before probing):
+  None meaningfully exists — this is the specific case the brief calls out
+  as "entirely absent from conventional metadata," not just a case of
+  imprecise metadata. That absence is itself recorded as the baseline.
+
+PROBE (behavioral):
+  `adb shell settings put global pulse_probe_test_key <value>` followed
+  immediately by `adb shell settings get global pulse_probe_test_key`.
+  Uses an inert, custom, non-functional key name in the `global`
+  namespace — chosen specifically so the write has no effect on any real
+  OS behavior (nothing reads this key), keeping the probe non-destructive
+  while still testing whether the settings-provider write/read path itself
+  is available and honest on this environment. The probe deletes the key
+  (`settings delete global pulse_probe_test_key`) as its last step.
+
+OBSERVATION mapping:
+  PASS — value read back matches what was written.
+  FAIL — value differs or key is absent on read-back.
+  UNKNOWN — the `settings put`/`get` command itself errored (e.g.
+    permission denied at the shell level) rather than silently
+    succeeding/failing on content.
+
+RESEARCH LOG:
+  What does this establish? Whether the settings-provider write path is
+    reachable and honest, right now, from an adb shell context, on this
+    device/emulator/OS build.
+  What does it NOT establish? Whether an installed app (running with its
+    own, more restricted, non-shell UID) would see the same persistence
+    behavior — same environment-vs-app-level caveat as probe 1.
+  Alternative explanations for a FAIL: SELinux/MDM policy blocking
+    `settings put` for shell specifically, a race between write and
+    read-back (unlikely given they run sequentially, but recorded as a
+    theoretical confounder), an OEM layer actively reverting third-party
+    global-namespace writes even for inert keys.
+  False-positive risk: low, same reasoning as probe 1.
+  False-negative risk: same class as probe 1 — a transient shell error
+    must map to UNKNOWN, not FAIL.
+  Would UNKNOWN be more honest in some cases? Yes, same rule as probe 1.
+  Does it modify device state? Yes, transiently — writes one inert,
+    non-functional key to the global settings namespace, deleted by the
+    probe's last step. No real OS behavior reads or is affected by this
+    key.
+  Independently reproducible? Yes.
+
+Novelty-firewall re-check for this probe specifically: OEM settings-revert
+behavior is widely anecdotally known (e.g. in the context of notification
+delivery on aggressive-battery-management OEM skins) but not, as far as
+checked here, packaged as a reusable, falsifiable, comparison-over-time
+probe anywhere — proceeding is justified.
+
+--------------------------------------------------------------------------
+REJECTED CANDIDATES (considered, not selected)
+--------------------------------------------------------------------------
+- background_service_runs — explicitly named in the brief itself as
+  heavily confounded by OEM/Doze/process-lifecycle behavior. Not selected,
+  per the brief's own instruction that this is a poor fit for experiment
+  001.
+- Clipboard background-read restriction (Android 10+) — genuinely
+  interesting (behavior with literally no corresponding metadata flag,
+  even stronger a case than probe 2), but reliably observing it requires a
+  companion test APK exercising ClipboardManager from an actual
+  foreground/background app context — plain `adb shell` cannot query
+  clipboard state on its own. Rejected for this experiment to keep
+  dependencies at stdlib + adb wrapper only per the entropy budget;
+  worth flagging as a strong candidate for a future experiment that
+  explicitly budgets for a minimal test APK.
+- Package-visibility (Android 11+ `<queries>` manifest restrictions) —
+  same problem as clipboard: `adb shell pm list packages` runs with full
+  shell-level visibility regardless of app-level query restrictions, so it
+  cannot actually exercise the assumption without a companion APK.
+  Rejected for the same reason.
+- Cleartext/HTTP network-policy behavior — explicitly out of scope per the
+  brief ("Network calls from Pulse itself: 0 ... skip network-availability
+  probes in experiment 001"). Not considered further.
+
+================================================================================
+6. ENVIRONMENT GAPS (FACT log, relevant to Phase 1 only — not blocking
+   this Phase 0 deliverable)
+================================================================================
+
+FACT — no Android emulator binary or AVD is currently configured in this
+  environment; only SDK platform-tools/build-tools/cmdline-tools exist.
+FACT — no physical Android device is currently connected (`adb devices`
+  returns an empty list).
+FACT — Docker is installed on the Windows host but WSL integration for
+  this distro is off, so a container-based Android target (e.g. redroid)
+  is not currently usable without that being enabled first.
+DECISION — not resolving this now. The brief's own environment note says
+  to request a missing dependency explicitly rather than silently work
+  around it, and its final instruction is to stop after this proposal
+  regardless. This is flagged in the final report as the one concrete
+  environment decision needed before Phase 1 can start (options: install
+  the SDK `emulator` package + a system image and hope WSL2's nested-KVM
+  support is adequate — historically unreliable; enable Docker Desktop's
+  WSL integration and explore a container-based target; or use a physical
+  Android phone over adb, which tends to be the most reliable path from
+  inside WSL2).
+
+================================================================================
+7. REPRODUCIBILITY (Section 10) — not yet applicable
+================================================================================
+No probe has been run yet (Phase 0 only). Once Phase 1 begins, each run
+will be logged here at its actual achieved rung (R0–R3); no generality
+claim will be made beyond the evidence grade actually achieved.
+
+================================================================================
+END OF PHASE 0 DELIVERABLE — STOPPING HERE PER INSTRUCTION.
+Awaiting operator confirmation before any implementation code is written.
+================================================================================
