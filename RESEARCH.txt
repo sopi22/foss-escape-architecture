@@ -367,23 +367,38 @@ RESOLVED (2026-08-13) — a physical device is now connected and available
 ================================================================================
 7. REPRODUCIBILITY (Section 10)
 ================================================================================
-FACT — probe_storage_write: run 3 times total against the same device
-  (Samsung Galaxy A53, Android 16/API 36) in this session: once standalone
-  during test execution, once via `pulse-run` run 1, once via `pulse-run`
-  run 2. All three PASS. Additionally run once with a deliberately
-  unwritable path and correctly returned FAIL (proves the probe
-  distinguishes FAIL from PASS, not just always-PASS).
-  Reproducibility achieved: R1 (reproduced, same environment, same
-  session). Not yet R2 (separate runs, i.e. a genuinely separate terminal
-  session/day) or R3 (separate environment/device). No generality claim
-  beyond R1 is made.
-FACT — probe_settings_persist: run 2 times against the same device
-  (`pulse-run` run 1 and run 2). Both PASS.
-  Reproducibility achieved: R1, same caveats as above.
-DECISION — not attempting R2/R3 in this session. That requires a later,
-  genuinely separate session (and ideally a second device for R3) rather
-  than repeating the same command back-to-back, which would not add real
-  evidence.
+R1 (2026-08-13, first session — see history below):
+  probe_storage_write: PASS x3 (test run, pulse-run x2), FAIL x1 on the
+    deliberate unwritable-path case. probe_settings_persist: PASS x2
+    (pulse-run x2). adb session then fully disconnected.
+
+R2 (2026-08-13, second session — this entry):
+  FACT — the adb wireless-debugging session from R1 was fully
+    disconnected (`adb disconnect`) before this session; this session
+    required a brand-new pairing code/port (the prior pairing session had
+    expired) and a fresh `adb connect`. This is a genuinely separate run
+    in the sense Section 10 means (separate connection/process lifecycle),
+    though still the same device, same day, same operator session in the
+    broader sense -- noted precisely rather than overclaimed.
+  FACT — probe_storage_write: PASS via the live-test suite (normal case)
+    and via `pulse-run`; FAIL correctly reproduced on the same deliberate
+    unwritable-path case as R1.
+  FACT — probe_settings_persist: PASS via the live-test suite and via
+    `pulse-run` (comparison: UNCHANGED against R1's stored result, as
+    expected for a device state that hasn't changed).
+  FACT — the settings_persist FAIL-detection gap flagged in the R1
+    falsification report (Section 8) is now closed: a new live test
+    (test_settings_persist_probe_detects_deliberate_failure, skip_write
+    case) was added and passed -- the probe correctly returns FAIL when
+    reading a key that was never written, not just PASS by construction.
+
+Reproducibility achieved: R2 for both probes, both PASS and FAIL
+  detection paths. Not yet R3 (separate device/environment) -- still a
+  single Samsung Galaxy A53. No generality claim beyond R2, single-device,
+  is made.
+DECISION — R3 (a second, different-OEM device) is not attempted here;
+  none is available in this environment. Left as the recommended next
+  step (Section 8).
 
 ================================================================================
 8. FALSIFICATION REPORT (Section 13 deliverable)
@@ -441,55 +456,52 @@ CONFOUNDERS CONSIDERED:
   - All runs happened within a few minutes of each other, same network,
     same device-awake state -- no evidence yet on behavior across a
     reboot, a Doze/idle cycle, or a different time of day.
-  - Probe-implementation-error risk: mitigated for FAIL-detection
-    specifically by the deliberate FAIL-case test (storage_write against
-    an unwritable path), which passed -- i.e. the harness itself is not
-    silently incapable of reporting FAIL. No equivalent deliberate
-    FAIL-case was run for settings_persist in this session (the
-    `skip_write` parameter exists in the code for this but wasn't
-    exercised as a live-device test) -- flagged here as an honest gap
-    rather than assumed to work by analogy.
+  - Probe-implementation-error risk: mitigated for FAIL-detection on both
+    probes as of R2 -- storage_write's deliberate FAIL case (unwritable
+    path) and settings_persist's deliberate FAIL case (read a never-
+    written key) both correctly returned FAIL, in both the R1 and R2
+    sessions for storage_write, and newly confirmed at R2 for
+    settings_persist. The R1 gap (settings_persist FAIL-detection
+    untested live) is closed.
 
-REPRODUCIBILITY LEVEL ACHIEVED: R1 for both probes (see Section 7).
+REPRODUCIBILITY LEVEL ACHIEVED: R2 for both probes, both PASS and FAIL
+  detection paths (see Section 7). Still single-device (Samsung Galaxy
+  A53) -- not R3.
 
-FALSE POSITIVES: none observed in this session -- no case where a probe
-  reported PASS for something that was actually broken (no independent
-  ground truth beyond the probe itself was checked here, so this is
-  bounded by session length and instrumentation, not a strong claim).
+FALSE POSITIVES: none observed across R1+R2 -- no case where a probe
+  reported PASS for something that was actually broken (bounded by what
+  was checked here, not an independent ground-truth audit).
 
-FALSE NEGATIVES: none observed for storage_write (its one designed
-  FAIL case correctly failed). Not evaluated for settings_persist in this
-  session -- see confounders above.
+FALSE NEGATIVES: none observed for either probe as of R2 -- both
+  probes' deliberate FAIL cases correctly failed in both sessions.
 
 WHAT WOULD CHANGE OUR MIND (as stated in advance, Section 3): a case
   where behavioral observation diverged from what metadata implied would
   strengthen H1; observations that always tracked metadata 1:1 would
   weaken it. Both probes surfaced information metadata didn't have
-  (settings_persist entirely, storage_write more specifically) -- this
-  supports H1 on the evidence-value question, though at R1, not a
-  generalizable claim yet.
+  (settings_persist entirely, storage_write more specifically), and this
+  held across two independent connection sessions -- this supports H1 on
+  the evidence-value question, now at R2, still not a cross-device
+  generalizable claim.
 
-CONCLUSION: WEAKLY SUPPORTED.
+CONCLUSION: WEAKLY SUPPORTED (upgraded evidence quality since the R1
+  report, same overall grade).
   H1 is supported in kind (both probes produced information beyond
-  metadata) but only at R1 reproducibility, on a single device/OEM, and
-  with the settings_persist FAIL-detection gap noted above. "Weakly" is
-  the honest grade here -- not "supported," which would overstate one
-  session on one device.
+  metadata, and did so reproducibly across R1 and R2, with both PASS and
+  FAIL detection paths now verified for both probes). Still "weakly", not
+  "supported" -- the evidence is R2 on a single device/OEM, and a claim
+  of generality needs R3 on a different device before it would be honest
+  to grade this higher.
 
 RECOMMENDED NEXT EXPERIMENT:
-  1. Re-run both probes in a genuinely separate session (different day)
-     on the same device to reach R2, and specifically test
-     settings_persist's `skip_write` FAIL case live to close the false-
-     negative gap noted above.
-  2. If a second Android device (different OEM) becomes available, repeat
-     for R3 -- this is the evidence that would actually let a claim
-     generalize beyond "this one Samsung device."
-  3. Only after R2/R3 evidence exists, consider whether the previously
-     rejected clipboard-background-read probe (Section 5, rejected
-     candidates) is worth a dedicated follow-up experiment that
-     explicitly budgets for a companion test APK -- it was the strongest
-     candidate rejected here purely on dependency-budget grounds, not on
-     scientific merit.
+  1. If a second Android device (different OEM) becomes available, repeat
+     both probes for R3 -- this is the evidence that would actually let a
+     claim generalize beyond "this one Samsung device."
+  2. Consider whether the previously rejected clipboard-background-read
+     probe (Section 5, rejected candidates) is worth a dedicated
+     follow-up experiment that explicitly budgets for a companion test
+     APK -- it was the strongest candidate rejected here purely on
+     dependency-budget grounds, not on scientific merit.
 
 ================================================================================
 END OF PHASE 1 DELIVERABLE.

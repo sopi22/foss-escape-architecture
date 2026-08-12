@@ -31,16 +31,17 @@ something to build.
 
 CURRENT PHASE
 --------------
-Phase 1 complete — both confirmed probes are implemented and have been
-run against a real device (Samsung Galaxy A53, Android 16/API 36), with
-a falsification report recorded from those actual runs. See RESEARCH.txt
-Section 8 for the report; conclusion so far is WEAKLY SUPPORTED at R1
-reproducibility (one device, one session) — see Section 7 for what R2/R3
-would require and Section 8's recommended next experiment.
+Phase 1 complete — both confirmed probes are implemented and have now
+been reproduced across two independent connection sessions (R2) against
+the same real device (Samsung Galaxy A53, Android 16/API 36), including
+both probes' deliberate FAIL-detection cases. See RESEARCH.txt Section 8
+for the falsification report; conclusion is WEAKLY SUPPORTED — the
+"weakly" is specifically because this is still one device/OEM, not
+because the evidence within that device is thin.
 
-What unlocks the next phase: a second, genuinely separate-session run
-(R2), and ideally a second device of a different make (R3) — neither has
-happened yet, so no claim beyond R1 is made anywhere in this project.
+What unlocks the next grade up: R3 — the same probes reproduced on a
+second device of a different make. None is available in this environment
+yet; see RESEARCH.txt Section 8's recommended next experiment.
 
 SETUP / RUN
 ------------
