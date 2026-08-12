@@ -349,21 +349,19 @@ REJECTED CANDIDATES (considered, not selected)
 
 FACT — no Android emulator binary or AVD is currently configured in this
   environment; only SDK platform-tools/build-tools/cmdline-tools exist.
-FACT — no physical Android device is currently connected (`adb devices`
-  returns an empty list).
 FACT — Docker is installed on the Windows host but WSL integration for
   this distro is off, so a container-based Android target (e.g. redroid)
   is not currently usable without that being enabled first.
-DECISION — not resolving this now. The brief's own environment note says
-  to request a missing dependency explicitly rather than silently work
-  around it, and its final instruction is to stop after this proposal
-  regardless. This is flagged in the final report as the one concrete
-  environment decision needed before Phase 1 can start (options: install
-  the SDK `emulator` package + a system image and hope WSL2's nested-KVM
-  support is adequate — historically unreliable; enable Docker Desktop's
-  WSL integration and explore a container-based target; or use a physical
-  Android phone over adb, which tends to be the most reliable path from
-  inside WSL2).
+RESOLVED (2026-08-13) — a physical device is now connected and available
+  for Phase 1: Samsung Galaxy A53 (model SM_A536E), Android 16, API 36,
+  manufacturer "samsung", reached over adb via Wireless debugging
+  (adb connect over WiFi, same LAN — no USB/usbipd needed). This was the
+  path flagged as most reliable from inside WSL2, and it held up in
+  practice. Note this connection is WiFi/session-dependent (device IP or
+  adb TCP session can drop on reconnect, sleep, or network change) — a
+  fresh `adb connect <ip>:<port>` may be needed at the start of a future
+  session; the port is stable across pairings but the pairing step itself
+  had to be redone once after an earlier pairing code expired.
 
 ================================================================================
 7. REPRODUCIBILITY (Section 10) — not yet applicable

@@ -40,10 +40,11 @@ What unlocks Phase 1 (implementation): explicit operator confirmation of
 the probe selection in RESEARCH.txt, per this experiment's brief
 ("wait for my confirmation before proceeding to implementation").
 
-Separately, Phase 1 also needs an actual Android target (emulator or
-physical device) to run probes against — none is currently configured in
-this environment. See RESEARCH.txt, Section 6 (Environment gaps), for the
-options and tradeoffs.
+Phase 1 also needs an actual Android target to run probes against — this
+is now resolved: a physical device (Samsung Galaxy A53, Android 16) is
+reachable over adb via Wireless debugging. See RESEARCH.txt, Section 6,
+for connection details and the one caveat (the WiFi adb session may need
+reconnecting in a future terminal session).
 
 SETUP / RUN
 ------------
