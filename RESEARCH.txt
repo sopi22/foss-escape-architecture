@@ -559,19 +559,35 @@ CONCLUSION: SUPPORTED, with a named residual limitation (upgraded from
   vendor's shipped OEM skin -- see the recommended next experiment below
   for what would close that specific gap.
 
-RECOMMENDED NEXT EXPERIMENT:
+RECOMMENDED NEXT EXPERIMENT (open item, not scheduled):
   1. If a second *physical* Android device from a different OEM (e.g.
      Pixel, OnePlus, Xiaomi hardware rather than a reference emulator
-     image) becomes available, repeat both probes there -- this is the
-     evidence that would close the emulator-vs-shipped-OEM-skin caveat
-     named in Section 8 and let the conclusion drop that qualifier
-     entirely.
+     image) becomes available through ordinary means, repeat both probes
+     there -- this is the evidence that would close the emulator-vs-
+     shipped-OEM-skin caveat named in Section 8 and let the conclusion
+     drop that qualifier entirely. This is left open, not urgent, and not
+     something to actively pursue (acquire, rent, or otherwise source a
+     device for) -- it resumes only if/when such a device becomes
+     available on its own. It is explicitly NOT a blocker: the SUPPORTED
+     conclusion above already stands on the R0-R2 physical-device
+     evidence plus R3's emulator confirmation, and Experiment 001 is
+     considered complete as reported without it.
   2. Consider whether the previously rejected clipboard-background-read
      probe (Section 5, rejected candidates) is worth a dedicated
      follow-up experiment that explicitly budgets for a companion test
      APK -- it was the strongest candidate rejected here purely on
-     dependency-budget grounds, not on scientific merit.
+     dependency-budget grounds, not on scientific merit. Same status:
+     open, not scheduled.
 
+================================================================================
+PHASE 1 CLOSED (2026-08-13).
+
+Conclusion stands as SUPPORTED (see Section 8). The R3 residual caveat
+(second device tested was an emulator, not a second physical different-
+OEM device) is logged above as an open item awaiting a future device of
+that kind -- explicitly not scheduled, not urgent, and not required for
+Experiment 001 to be considered complete. No other items are pending on
+this phase.
 ================================================================================
 END OF PHASE 1 DELIVERABLE.
 ================================================================================
