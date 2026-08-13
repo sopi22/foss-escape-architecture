@@ -32,20 +32,23 @@ something to build.
 CURRENT PHASE
 --------------
 Phase 1 CLOSED — both confirmed probes are implemented and have been
-reproduced across three sessions (R3) and two device identities: a
-real Samsung Galaxy A53 (Android 16/API 36, R1/R2) and a Google emulator
-(AVD, Android 14/API 34, R3), including both probes' deliberate
-FAIL-detection cases on both devices. See RESEARCH.txt Section 8 for the
-falsification report; conclusion is SUPPORTED, with a named residual
-limitation — the emulator is a reference "google_apis" image, not a
-second vendor's shipped OEM skin.
+reproduced across four sessions (R4) and three device identities: a real
+Samsung Galaxy A53 (Android 16/API 36, R1/R2), a Google emulator (AVD,
+Android 14/API 34, R3), and a real Samsung Galaxy A54 (Android 16/API 36,
+R4), including both probes' deliberate FAIL-detection cases on all three.
+See RESEARCH.txt Section 8 for the falsification report; conclusion is
+SUPPORTED, with a named residual limitation — no run has yet used a
+second vendor's shipped OEM skin on physical hardware (the emulator is a
+reference "google_apis" image, and R4's A54 is a second Samsung model,
+same OEM as R1/R2 — it added evidence but did not close this gap).
 
 That limitation is logged as an OPEN, NOT-SCHEDULED item — a second
 Android device that is both a different OEM *and* a physical device
-(not a reference-image emulator) would close it, but none is available
-right now, it is not being actively sourced, and it is not required for
-Experiment 001 to be considered complete. See RESEARCH.txt Section 8's
-recommended next experiment for the exact status. No other items are
+(not a reference-image emulator, and not another Samsung model) would
+close it, but none is available right now, it is not being actively
+sourced, and it is not required for Experiment 001 to be considered
+complete. See RESEARCH.txt Section 8's recommended next experiment for
+the exact status. No other items are
 pending on this phase.
 
 SETUP / RUN
