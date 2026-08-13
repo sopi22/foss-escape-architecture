@@ -139,7 +139,7 @@ For each assumption tested, the conventional-metadata answer is recorded
 first (Section 5 per-probe entries below), before the behavioral probe is
 run, so the comparison is not written after the fact.
 
-WHAT WOULD CHANGE OUR MIND (stated in advance):
+WHAT WOULD CHANGE MY MIND (stated in advance):
 - Toward H1: any probe run where the behavioral observation is PASS/FAIL in
   a way conventional metadata could not have predicted (metadata says
   "should work" but probe observes FAIL, or vice versa), reproduced at
@@ -537,7 +537,7 @@ FALSE NEGATIVES: none observed for either probe as of R3 -- both
   probes' deliberate FAIL cases correctly failed in every session, on
   both devices.
 
-WHAT WOULD CHANGE OUR MIND (as stated in advance, Section 3): a case
+WHAT WOULD CHANGE MY MIND (as stated in advance, Section 3): a case
   where behavioral observation diverged from what metadata implied would
   strengthen H1; observations that always tracked metadata 1:1 would
   weaken it. Both probes surfaced information metadata didn't have
