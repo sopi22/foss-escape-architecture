@@ -15,6 +15,7 @@ dev = ["pytest>=7"]
 
 [project.scripts]
 pulse-run = "pulse.cli:main"
+pulse-recheck = "pulse.recheck:main"
 
 [build-system]
 requires = ["setuptools>=68"]

@@ -37,6 +37,28 @@ pulse_history.json (in the current directory by default; override with
 --history <path>) so the next run can report NEW/UNCHANGED/CHANGED for
 the same assumption.
 
+RE-CHECK LATER
+----------------
+Pulse's own hypothesis includes being comparable over time, but every
+run logged so far happened within one short session. `pulse-recheck`
+is a manual-trigger way to re-run the same two probes later (e.g.
+after an Android security patch or OS update lands on the test
+device) and log the result -- not a new probe, not scheduled, not a
+background process:
+
+    pulse-recheck --serial <serial-as-shown-by-adb-devices>
+
+    # example:
+    pulse-recheck --serial 10.161.62.188:40139
+
+This does everything `pulse-run` does (same two probes, same
+pulse_history.json, same NEW/UNCHANGED/CHANGED/NO_COMPARISON logic)
+and additionally appends one dated OBSERVATION/COMPARISON block to
+../RESEARCH.txt's "PERIODIC RE-CHECK LOG" section (override the
+target file with --research-txt if not running from this directory).
+Run this yourself, occasionally -- there is nothing to set up or leave
+running.
+
 RUN THE TESTS
 --------------
     pytest

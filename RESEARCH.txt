@@ -660,3 +660,30 @@ DECISION (2026-08-14) -- fix scoped to probe_settings_persist's
   (tests/test_probes_live.py) both now assert the corrected wording.
 
 ================================================================================
+
+================================================================================
+10. PERIODIC RE-CHECK LOG (manual-trigger only; see pulse/README.txt
+    "RE-CHECK LATER" for how to invoke -- not a scheduled or
+    background process, entropy budget's "Background processes: 0" is
+    unaffected)
+================================================================================
+
+DECISION (2026-08-14) -- Pulse's own hypothesis includes being
+  comparable over time, but R0-R4 were all collected within one short
+  session, not across real elapsed time as the OS actually updates.
+  `pulse-run` already computes NEW/UNCHANGED/CHANGED/NO_COMPARISON
+  against pulse_history.json on every run (store.py), so the
+  comparison machinery already existed; what was missing was a durable,
+  human-readable log of that comparison anywhere outside the JSON
+  history file. Added `pulse-recheck` (pulse/src/pulse/recheck.py,
+  registered in pyproject.toml) -- it runs the same two ALL_PROBES
+  cli.py runs, same history file, then appends one dated block below
+  to this section with each probe's OBSERVATION and COMPARISON, using
+  only the existing ProbeResult/Comparison fields (no new fields, no
+  new report format). Not a new probe type, not a daemon: run by hand,
+  occasionally (e.g. after an Android security patch or OS update
+  lands on the test device).
+
+No re-check has been run yet -- the entries below start whenever one
+actually is.
+
