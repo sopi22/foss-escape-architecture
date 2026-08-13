@@ -625,3 +625,38 @@ item remains open, unchanged. No other items are pending on this phase.
 ================================================================================
 END OF PHASE 1 DELIVERABLE.
 ================================================================================
+
+================================================================================
+9. POST-CLOSURE FIX LOG (bug fixes found after Phase 1 closure -- does
+   not reopen the Section 8 conclusion; PASS/FAIL logic unaffected)
+================================================================================
+
+FACT (2026-08-14) -- Autopsy Experiment #001 (an external, bounded
+  reconstruction exercise; see autopsy_experiment_001_findings.txt one
+  level up, outside this repo) surfaced a real defect in
+  probe_settings_persist's mismatch detail string: on the
+  skip_write=True FAIL case, the string read "value mismatch: wrote
+  'pulse-probe', read back ...", claiming a write happened when the
+  probe deliberately never issued `settings put`. The claim was always
+  templated text, not derived from what actually ran -- a reader
+  trusting the prose over the real command log would misattribute this
+  FAIL to a persistence failure instead of the deliberate skip. The
+  PASS/FAIL observation itself was never wrong, only the prose
+  explaining it.
+  probe_storage_write was checked for the same defect class and does
+  not have it: it has no skip-write parameter, always attempts its
+  write unconditionally, and its own "write failed" branch (distinct
+  from "content mismatch") already reports a real write failure
+  honestly. No change made there.
+
+DECISION (2026-08-14) -- fix scoped to probe_settings_persist's
+  mismatch-message construction only: when skip_write=True, the detail
+  string now says "no write attempted (skip_write=True)" instead of
+  "wrote 'pulse-probe'"; the normal (non-skip) path is unchanged. No
+  new abstraction for detail-string generation, no refactor of probe
+  reporting generally. Regression coverage added: an offline unit test
+  (tests/test_probes_offline.py, fake shell, no device required) plus
+  an extended assertion on the existing live FAIL-detection test
+  (tests/test_probes_live.py) both now assert the corrected wording.
+
+================================================================================

@@ -57,3 +57,8 @@ def test_settings_persist_probe_detects_deliberate_failure(device_serial):
         "expected FAIL when reading a key that was never written -- if "
         f"this is PASS instead, the probe isn't actually detecting failure: {result.detail}"
     )
+    assert "no write attempted" in result.detail, (
+        "detail string must say no write was attempted when skip_write=True -- "
+        f"not a templated 'wrote ...' phrase that misrepresents what happened: {result.detail}"
+    )
+    assert "wrote 'pulse-probe'" not in result.detail

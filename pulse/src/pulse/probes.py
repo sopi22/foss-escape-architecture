@@ -115,10 +115,15 @@ def probe_settings_persist(
             return ProbeResult(
                 assumption, Observation.PASS, "put+get matched", now_iso()
             )
+        write_phrase = (
+            "no write attempted (skip_write=True)"
+            if skip_write
+            else f"wrote {SETTINGS_MARKER_VALUE!r}"
+        )
         return ProbeResult(
             assumption,
             Observation.FAIL,
-            f"value mismatch: wrote {SETTINGS_MARKER_VALUE!r}, read back {observed!r}",
+            f"value mismatch: {write_phrase}, read back {observed!r}",
             now_iso(),
         )
     except AdbTransportError as exc:
