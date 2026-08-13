@@ -364,6 +364,21 @@ RESOLVED (2026-08-13) — a physical device is now connected and available
   session; the port is stable across pairings but the pairing step itself
   had to be redone once after an earlier pairing code expired.
 
+RESOLVED (2026-08-13) — R3's second, different-OEM device is now
+  available: a local Android emulator (AVD "pulse_r3_google_apis", Pixel 6
+  profile, Google APIs x86_64 system image, Android 14/API 34) running
+  under WSL2. This required hardware-accelerated virtualization (KVM);
+  `/dev/kvm` exists but is group-owned `kvm`, and the operator's WSL user
+  was not a member of that group, so `emulator -accel-check` would have
+  fallen back to unusable software emulation. The operator ran
+  `sudo usermod -aG kvm <user>` themselves, outside this session (per this
+  project's standing rule that privileged/credentialed steps are the
+  operator's to run, not something to attempt here) and confirmed
+  membership via `groups`. `emulator -accel-check` now reports
+  "KVM (version 12) is installed and usable." This closes the
+  emulator/AVD gap noted above and the "no second device" gap named as
+  R3's blocker in Section 7/8 below.
+
 ================================================================================
 7. REPRODUCIBILITY (Section 10)
 ================================================================================
@@ -392,13 +407,47 @@ R2 (2026-08-13, second session — this entry):
     case) was added and passed -- the probe correctly returns FAIL when
     reading a key that was never written, not just PASS by construction.
 
-Reproducibility achieved: R2 for both probes, both PASS and FAIL
-  detection paths. Not yet R3 (separate device/environment) -- still a
-  single Samsung Galaxy A53. No generality claim beyond R2, single-device,
-  is made.
-DECISION — R3 (a second, different-OEM device) is not attempted here;
-  none is available in this environment. Left as the recommended next
-  step (Section 8).
+R3 (2026-08-13, third session, second device — this entry):
+  FACT — device is a Google emulator (AVD "pulse_r3_google_apis"),
+    ro.product.manufacturer=Google, ro.product.model=sdk_gphone64_x86_64,
+    Android 14/API 34, fingerprint
+    google/sdk_gphone64_x86_64/emu64xa:14/UE1A.230829.050/12077443:
+    userdebug/dev-keys -- a genuinely different OEM/build from the
+    Samsung Galaxy A53 (One UI, Android 16/API 36) used for R1/R2, and
+    the first non-physical-device run.
+  FACT — probe_storage_write: PASS via `pulse-run` (write+read-back
+    matched) and via the live-test suite, including the deliberate
+    unwritable-path FAIL case (test_storage_write_probe_detects_
+    deliberate_failure) -- both PASS and FAIL-detection paths reproduced
+    on this second device.
+  FACT — probe_settings_persist: PASS via `pulse-run` (put+get matched)
+    and via the live-test suite, including the deliberate never-written-
+    key FAIL case (test_settings_persist_probe_detects_deliberate_
+    failure) -- both PASS and FAIL-detection paths reproduced on this
+    second device.
+  FACT — all 10 tests in the live pytest suite passed against this
+    device (4 live-probe tests + 6 store/comparison-logic unit tests).
+  CAVEAT, stated precisely rather than overclaimed — `pulse_history.json`
+    stores one current record per assumption (not keyed by device), so
+    this run's `pulse-run` output reported "comparison: UNCHANGED" only
+    because the emulator's PASS result happened to match the value
+    already on disk from the Samsung run; it is not itself evidence of
+    cross-device consistency, just a coincidence of both devices passing.
+    The actual cross-device evidence is the independent PASS/FAIL-
+    detection results recorded as FACTs above, not the tool's own
+    comparison field.
+  CAVEAT — an emulator is not identical to a second physical OEM device:
+    it runs Google's reference "google_apis" system image rather than a
+    second vendor's shipped OS skin, so it demonstrates cross-build/
+    cross-manufacturer-identity generality (real gap: Samsung One UI vs.
+    stock Google build) but not a second vendor's *skin-layer* behavior
+    specifically. Recorded here rather than silently treated as
+    equivalent to a second physical OEM device.
+
+Reproducibility achieved: R3 for both probes, both PASS and FAIL
+  detection paths, now across two different device identities (Samsung
+  Galaxy A53 physical device; Google emulator). See the caveats above on
+  what this does and does not generalize to.
 
 ================================================================================
 8. FALSIFICATION REPORT (Section 13 deliverable)
@@ -426,10 +475,14 @@ running):
     "entirely absent from conventional metadata" case named in advance.
 
 OBSERVED RESULT (actual, from live runs against the Samsung Galaxy A53,
-Android 16/API 36, recorded above):
-  - storage_write: PASS (write+read-back matched) on 3/3 normal runs;
-    correctly FAILs when pointed at an unwritable path.
-  - settings_persist: PASS (put+get matched) on 2/2 runs.
+Android 16/API 36, R1/R2, plus the Google emulator, Android 14/API 34,
+R3, recorded above):
+  - storage_write: PASS (write+read-back matched) on every normal run
+    across both devices; correctly FAILs when pointed at an unwritable
+    path, on both devices.
+  - settings_persist: PASS (put+get matched) on every run across both
+    devices; correctly FAILs when reading a never-written key, on both
+    devices (FAIL-detection case only exercised live from R2 onward).
 
 NOVEL INFORMATION BEYOND BASELINE:
   - storage_write: the behavioral result (PASS) is MORE SPECIFIC than the
@@ -445,58 +498,74 @@ NOVEL INFORMATION BEYOND BASELINE:
     keys. The probe is the only way this was known.
 
 CONFOUNDERS CONSIDERED:
-  - Only one device/build tested (Samsung, One UI on Android 16) -- OEM-
-    specific behavior on this exact skin cannot be generalized to other
-    OEMs from this evidence alone.
+  - Two device identities tested (Samsung One UI/Android 16 physical
+    device; Google reference "google_apis" emulator/Android 14) -- this
+    covers cross-manufacturer and cross-API-level generality, but the
+    second device is an emulator on the vendor's own reference image,
+    not a second vendor's shipped OEM skin. A third, different-vendor
+    *physical* device would still add real evidence beyond what R3
+    covers here; not claimed as already covered.
   - adb shell runs as the `shell` UID, not an installed app's sandboxed
     UID -- both probes establish an environment-level fact, not proof
     that an installed app's runtime-permission-gated calls would behave
     identically (stated as a limitation in each probe's research log,
-    Section 5).
-  - All runs happened within a few minutes of each other, same network,
-    same device-awake state -- no evidence yet on behavior across a
-    reboot, a Doze/idle cycle, or a different time of day.
+    Section 5). This applies identically on the emulator.
+  - All runs on a given device happened within a few minutes of each
+    other, same network/host, same device-awake state -- no evidence yet
+    on behavior across a reboot, a Doze/idle cycle, or a different time
+    of day, on either device.
   - Probe-implementation-error risk: mitigated for FAIL-detection on both
-    probes as of R2 -- storage_write's deliberate FAIL case (unwritable
-    path) and settings_persist's deliberate FAIL case (read a never-
-    written key) both correctly returned FAIL, in both the R1 and R2
-    sessions for storage_write, and newly confirmed at R2 for
-    settings_persist. The R1 gap (settings_persist FAIL-detection
-    untested live) is closed.
+    probes as of R2, and now reconfirmed at R3 on a second device --
+    storage_write's deliberate FAIL case (unwritable path) and
+    settings_persist's deliberate FAIL case (read a never-written key)
+    both correctly returned FAIL on the Samsung device (R1/R2) and on
+    the emulator (R3).
+  - `pulse_history.json`'s single-record-per-assumption storage means its
+    own "comparison" field is not itself cross-device evidence (see the
+    R3 caveat in Section 7) -- the FACTs above are drawn from the direct
+    pytest/pulse-run PASS/FAIL outputs, not from that comparison field.
 
-REPRODUCIBILITY LEVEL ACHIEVED: R2 for both probes, both PASS and FAIL
-  detection paths (see Section 7). Still single-device (Samsung Galaxy
-  A53) -- not R3.
+REPRODUCIBILITY LEVEL ACHIEVED: R3 for both probes, both PASS and FAIL
+  detection paths, across two different device identities (see
+  Section 7).
 
-FALSE POSITIVES: none observed across R1+R2 -- no case where a probe
+FALSE POSITIVES: none observed across R1+R2+R3 -- no case where a probe
   reported PASS for something that was actually broken (bounded by what
   was checked here, not an independent ground-truth audit).
 
-FALSE NEGATIVES: none observed for either probe as of R2 -- both
-  probes' deliberate FAIL cases correctly failed in both sessions.
+FALSE NEGATIVES: none observed for either probe as of R3 -- both
+  probes' deliberate FAIL cases correctly failed in every session, on
+  both devices.
 
 WHAT WOULD CHANGE OUR MIND (as stated in advance, Section 3): a case
   where behavioral observation diverged from what metadata implied would
   strengthen H1; observations that always tracked metadata 1:1 would
   weaken it. Both probes surfaced information metadata didn't have
   (settings_persist entirely, storage_write more specifically), and this
-  held across two independent connection sessions -- this supports H1 on
-  the evidence-value question, now at R2, still not a cross-device
-  generalizable claim.
+  held across three sessions and, as of R3, two different device
+  identities -- this supports H1 on the evidence-value question at a
+  cross-device level, though still bounded by the emulator-vs-physical-
+  OEM-skin caveat above.
 
-CONCLUSION: WEAKLY SUPPORTED (upgraded evidence quality since the R1
-  report, same overall grade).
-  H1 is supported in kind (both probes produced information beyond
-  metadata, and did so reproducibly across R1 and R2, with both PASS and
-  FAIL detection paths now verified for both probes). Still "weakly", not
-  "supported" -- the evidence is R2 on a single device/OEM, and a claim
-  of generality needs R3 on a different device before it would be honest
-  to grade this higher.
+CONCLUSION: SUPPORTED, with a named residual limitation (upgraded from
+  WEAKLY SUPPORTED after R3).
+  H1 is supported: both probes produced information beyond metadata, did
+  so reproducibly across three sessions, with both PASS and FAIL
+  detection paths verified for both probes, and this held across two
+  device identities from different manufacturers (Samsung physical
+  device, Google emulator), not just repeated runs on one device. The
+  grade is not raised to unqualified "supported without caveat" because
+  the second device is a reference-image emulator rather than a second
+  vendor's shipped OEM skin -- see the recommended next experiment below
+  for what would close that specific gap.
 
 RECOMMENDED NEXT EXPERIMENT:
-  1. If a second Android device (different OEM) becomes available, repeat
-     both probes for R3 -- this is the evidence that would actually let a
-     claim generalize beyond "this one Samsung device."
+  1. If a second *physical* Android device from a different OEM (e.g.
+     Pixel, OnePlus, Xiaomi hardware rather than a reference emulator
+     image) becomes available, repeat both probes there -- this is the
+     evidence that would close the emulator-vs-shipped-OEM-skin caveat
+     named in Section 8 and let the conclusion drop that qualifier
+     entirely.
   2. Consider whether the previously rejected clipboard-background-read
      probe (Section 5, rejected candidates) is worth a dedicated
      follow-up experiment that explicitly budgets for a companion test

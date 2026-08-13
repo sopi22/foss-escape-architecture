@@ -32,16 +32,18 @@ something to build.
 CURRENT PHASE
 --------------
 Phase 1 complete — both confirmed probes are implemented and have now
-been reproduced across two independent connection sessions (R2) against
-the same real device (Samsung Galaxy A53, Android 16/API 36), including
-both probes' deliberate FAIL-detection cases. See RESEARCH.txt Section 8
-for the falsification report; conclusion is WEAKLY SUPPORTED — the
-"weakly" is specifically because this is still one device/OEM, not
-because the evidence within that device is thin.
+been reproduced across three sessions (R3) and two device identities: a
+real Samsung Galaxy A53 (Android 16/API 36, R1/R2) and a Google emulator
+(AVD, Android 14/API 34, R3), including both probes' deliberate
+FAIL-detection cases on both devices. See RESEARCH.txt Section 8 for the
+falsification report; conclusion is SUPPORTED, with a named residual
+limitation — the emulator is a reference "google_apis" image, not a
+second vendor's shipped OEM skin, so that specific gap is not yet closed.
 
-What unlocks the next grade up: R3 — the same probes reproduced on a
-second device of a different make. None is available in this environment
-yet; see RESEARCH.txt Section 8's recommended next experiment.
+What would close the remaining gap: a second Android device that is both
+a different OEM *and* a physical device (not a reference-image emulator).
+None is available in this environment yet; see RESEARCH.txt Section 8's
+recommended next experiment.
 
 SETUP / RUN
 ------------
