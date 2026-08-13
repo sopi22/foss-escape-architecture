@@ -18,7 +18,7 @@ H0 (null hypothesis): no — behavioral probing adds nothing materially
 
 A result supporting H0 is a complete, successful experiment, not a failed
 one. See RESEARCH.txt for the full falsification criteria, baseline
-methodology, and what would change our mind (stated in advance).
+methodology, and what would change my mind (stated in advance).
 
 NON-GOALS
 ---------
