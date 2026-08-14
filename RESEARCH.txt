@@ -684,6 +684,47 @@ DECISION (2026-08-14) -- Pulse's own hypothesis includes being
   occasionally (e.g. after an Android security patch or OS update
   lands on the test device).
 
-No re-check has been run yet -- the entries below start whenever one
-actually is.
+FACT (2026-08-14) -- patch-level baseline check, ahead of the first
+  re-check below. Reconnected the A53 over adb (wireless debugging);
+  confirmed by build fingerprint
+  (samsung/a53xnsxx/a53x:16/BP2A.250605.031.A3/A536EXXSNGZG3, serial
+  RRCW105GHAV) to be the same model used for R1/R2 (SM_A536E).
+  `adb shell getprop ro.build.version.security_patch` on this device
+  reads 2026-07-05 -- not 2026-08-04, which is what was manually read
+  from the device's own Settings screen and reported as the A53's
+  patch date. 2026-07-05 is, notably, the exact date separately
+  reported for the A54's patch level -- this looks like the two dates
+  may have been read off the two phones in the wrong order, not
+  resolved here, flagged rather than silently picked. Both candidate
+  dates predate 2026-08-13 (the R0-R4 testing session), so the
+  operative conclusion below (no patch has landed on this device since
+  testing began) holds either way.
 
+DECISION (2026-08-14) -- proceeded with the re-check below rather than
+  blocking on the date mix-up, since the recheck's own result doesn't
+  depend on which candidate date is correct. Recording 2026-07-05 as
+  the value actually read from the device via adb -- the authoritative
+  source over a manually-read screen value -- as the baseline pending
+  confirmation; treat this as provisional, not final, until confirmed
+  which phone actually showed which date.
+
+RE-CHECK (2026-08-14, device 10.161.62.188:38927):
+  storage_write: OBSERVATION=PASS, COMPARISON=UNCHANGED -- write+read-back matched
+  settings_persist: OBSERVATION=PASS, COMPARISON=UNCHANGED -- put+get matched
+
+FACT (2026-08-14) -- both probes returned PASS, COMPARISON=UNCHANGED
+  against the 2026-08-13 run. This is the correct, expected outcome
+  given no patch has landed on this device since testing began under
+  either candidate date above -- not a null result. This is Pulse's
+  first real logged comparison over actual elapsed time (12 days
+  wall-clock), not just repeated runs within one session -- the part
+  of H1 ("comparable over time") that R0-R4 could not test on their
+  own.
+
+  A54 (model SM-A546E, not previously used for Pulse testing):
+  security patch reported by the operator as 2026-07-05, subject to
+  the same read-order ambiguity noted above. Logged here as a known
+  fact only -- no probes have been run against it. Per the standing
+  R3/R4 finding, it remains a same-OEM (Samsung) device and does NOT
+  fulfill the different-OEM requirement even if used for a future
+  recheck.
