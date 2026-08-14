@@ -692,21 +692,31 @@ FACT (2026-08-14) -- patch-level baseline check, ahead of the first
   `adb shell getprop ro.build.version.security_patch` on this device
   reads 2026-07-05 -- not 2026-08-04, which is what was manually read
   from the device's own Settings screen and reported as the A53's
-  patch date. 2026-07-05 is, notably, the exact date separately
-  reported for the A54's patch level -- this looks like the two dates
-  may have been read off the two phones in the wrong order, not
-  resolved here, flagged rather than silently picked. Both candidate
-  dates predate 2026-08-13 (the R0-R4 testing session), so the
-  operative conclusion below (no patch has landed on this device since
-  testing began) holds either way.
+  patch date.
 
-DECISION (2026-08-14) -- proceeded with the re-check below rather than
-  blocking on the date mix-up, since the recheck's own result doesn't
-  depend on which candidate date is correct. Recording 2026-07-05 as
-  the value actually read from the device via adb -- the authoritative
-  source over a manually-read screen value -- as the baseline pending
-  confirmation; treat this as provisional, not final, until confirmed
-  which phone actually showed which date.
+FACT (2026-08-14) -- resolved by direct device query, not a second
+  manual read (per this project's own methodology: distrust
+  self-reported state, prefer direct observation). Paired and
+  connected to the A54 over adb; confirmed by build fingerprint
+  (samsung/a54xnsxx/a54x:16/BP4A.251205.006/A546EXXSLFZG3, serial
+  R5CW41TXWJB) to be model SM-A546E. `adb shell
+  getprop ro.build.version.security_patch` on the A54 also reads
+  2026-07-05 -- the same value as the A53, not a different one. This
+  rules out the "dates read off the wrong phone" hypothesis: both
+  devices genuinely report 2026-07-05, and 2026-08-04 is not
+  corroborated by an adb-verified reading on either device. Both
+  confirmed dates predate 2026-08-13 (the R0-R4 testing session), so
+  the operative conclusion below (no patch had landed on the A53 since
+  testing began) still holds.
+
+DECISION (2026-08-14) -- 2026-07-05 is the confirmed, adb-verified
+  security patch level for both the A53 and the A54 as of this
+  session. The 2026-08-04 figure is not used as a baseline anywhere in
+  this log; it does not match either device's actual reported value by
+  the authoritative method (adb getprop over a manually-read screen
+  value) and its origin is unresolved. No further re-check needed to
+  settle this -- the recheck below already ran and its result is
+  unaffected either way.
 
 RE-CHECK (2026-08-14, device 10.161.62.188:38927):
   storage_write: OBSERVATION=PASS, COMPARISON=UNCHANGED -- write+read-back matched
@@ -714,17 +724,16 @@ RE-CHECK (2026-08-14, device 10.161.62.188:38927):
 
 FACT (2026-08-14) -- both probes returned PASS, COMPARISON=UNCHANGED
   against the 2026-08-13 run. This is the correct, expected outcome
-  given no patch has landed on this device since testing began under
-  either candidate date above -- not a null result. This is Pulse's
-  first real logged comparison over actual elapsed time (12 days
-  wall-clock), not just repeated runs within one session -- the part
-  of H1 ("comparable over time") that R0-R4 could not test on their
-  own.
+  given no patch had landed on this device since testing began (per
+  the confirmed 2026-07-05 patch level above) -- not a null result.
+  This is Pulse's first real logged comparison over actual elapsed
+  time (12 days wall-clock), not just repeated runs within one
+  session -- the part of H1 ("comparable over time") that R0-R4 could
+  not test on their own.
 
-  A54 (model SM-A546E, not previously used for Pulse testing):
-  security patch reported by the operator as 2026-07-05, subject to
-  the same read-order ambiguity noted above. Logged here as a known
-  fact only -- no probes have been run against it. Per the standing
-  R3/R4 finding, it remains a same-OEM (Samsung) device and does NOT
-  fulfill the different-OEM requirement even if used for a future
-  recheck.
+  A54 (model SM-A546E, serial R5CW41TXWJB, not previously used for
+  Pulse testing): security patch confirmed via adb as 2026-07-05 (see
+  above). Logged here as a known fact only -- no probes have been run
+  against it. Per the standing R3/R4 finding, it remains a same-OEM
+  (Samsung) device and does NOT fulfill the different-OEM requirement
+  even if used for a future recheck.
