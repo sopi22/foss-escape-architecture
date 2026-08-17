@@ -5,7 +5,7 @@ Pulse's own research hypothesis includes being comparable *over time*
 not across real elapsed time as the OS actually updates. This gives a
 way to re-run the two confirmed probes later (e.g. after an Android
 security patch or OS update lands on the test device) and log a real
-COMPARISON state against the last run, in RESEARCH.txt where a human
+COMPARISON state against the last run, in RESEARCH.md where a human
 will actually read it alongside the rest of the reproducibility record.
 
 This is NOT a new probe type (it runs the same two ALL_PROBES cli.py
@@ -27,7 +27,7 @@ from .probes import ALL_PROBES
 from .store import load_history, record, save_history
 
 DEFAULT_HISTORY_PATH = Path("pulse_history.json")
-DEFAULT_RESEARCH_PATH = Path("../RESEARCH.txt")
+DEFAULT_RESEARCH_PATH = Path("../RESEARCH.md")
 SECTION_MARKER = "10. PERIODIC RE-CHECK LOG"
 
 
@@ -63,7 +63,7 @@ def main(argv: list[str] | None = None) -> int:
         description=(
             "Manually re-run Pulse's two confirmed probes against the "
             "currently connected device and log a dated "
-            "OBSERVATION/COMPARISON entry to RESEARCH.txt's periodic "
+            "OBSERVATION/COMPARISON entry to RESEARCH.md's periodic "
             "re-check log. Run this yourself, occasionally -- it is not "
             "scheduled and does not run in the background."
         )
@@ -83,7 +83,7 @@ def main(argv: list[str] | None = None) -> int:
         "--research-txt",
         type=Path,
         default=DEFAULT_RESEARCH_PATH,
-        help=f"Path to RESEARCH.txt to append the dated entry to (default: {DEFAULT_RESEARCH_PATH}).",
+        help=f"Path to RESEARCH.md to append the dated entry to (default: {DEFAULT_RESEARCH_PATH}).",
     )
     args = parser.parse_args(argv)
 

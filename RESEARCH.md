@@ -3,9 +3,7 @@ Phase: 1 (implementation + first live run) complete. Probe selection was
 confirmed by the operator on 2026-08-13; see Section 8 for the
 falsification report from the actual runs against the connected device.
 
-================================================================================
-1. CLARIFICATION GATE (Section 15)
-================================================================================
+## 1. CLARIFICATION GATE (Section 15)
 
 Q: What is H1, and what is H0?
 A: See Section 3 below (Hypothesis framing).
@@ -48,9 +46,7 @@ A: DECISION — repo name `foss-escape-architecture` (as specified in the
 Q: Anything in Sections 3–14 that should explicitly not apply this time?
 A: None identified. All sections apply as written.
 
-================================================================================
-2. NOVELTY FIREWALL (Section 4)
-================================================================================
+## 2. NOVELTY FIREWALL (Section 4)
 
 Applied to the project as a whole, before any implementation.
 
@@ -114,9 +110,7 @@ Re-applied at probe-selection level below, per-probe, where a candidate
 probe resembled an existing solved problem (background-service liveness,
 network cleartext policy, package-visibility API changes).
 
-================================================================================
-3. RESEARCH HYPOTHESIS FRAMING (Section 5)
-================================================================================
+## 3. RESEARCH HYPOTHESIS FRAMING (Section 5)
 
 RESEARCH HYPOTHESIS (H1):
 A meaningful subset of software/environment compatibility failures can be
@@ -149,9 +143,7 @@ WHAT WOULD CHANGE MY MIND (stated in advance):
   should be reported plainly as such rather than reframed as a tooling
   problem.
 
-================================================================================
-4. OPERATOR CONTEXT (Section 1)
-================================================================================
+## 4. OPERATOR CONTEXT (Section 1)
 
 Researcher / sole author for attribution purposes: Jhoana Sophia Munar
   (jhosophie@proton.me, GitHub account "sopi22").
@@ -180,9 +172,7 @@ GitHub account to use: github.com/sopi22 (display/commit name updated to
   Jhoana Sophia Munar locally — see final report for what could and
   couldn't be changed).
 
-================================================================================
-5. PROBE SELECTION AND JUSTIFICATION
-================================================================================
+## 5. PROBE SELECTION AND JUSTIFICATION
 
 The brief allows "up to 3" probes. Two are proposed here, not three — a
 third pure-adb, no-companion-APK candidate that was meaningfully distinct
@@ -192,9 +182,7 @@ force-fit" and minimalism rules more than it would satisfy the brief.
 Rejected candidates are logged below with reasoning (Section 9, Confounder
 rule / honesty-over-volume).
 
---------------------------------------------------------------------------
-PROBE 1 — provisional name: probe_storage_write
---------------------------------------------------------------------------
+### PROBE 1 — provisional name: probe_storage_write
 ASSUMPTION UNDER TEST: "A file can be written to and read back from a
 fixed, legacy-style external-storage path on this device/emulator, via
 adb shell, right now."
@@ -253,9 +241,7 @@ existing certified/solved system (scoped-storage compliance is normally
 checked by manually reading platform docs or trial-and-error in-app, not
 by a standalone reusable probe) — proceeding is justified.
 
---------------------------------------------------------------------------
-PROBE 2 — provisional name: probe_settings_persist
---------------------------------------------------------------------------
+### PROBE 2 — provisional name: probe_settings_persist
 ASSUMPTION UNDER TEST: "A value written to the Android Settings provider
 via adb shell persists unchanged when read back immediately after."
 
@@ -318,9 +304,7 @@ delivery on aggressive-battery-management OEM skins) but not, as far as
 checked here, packaged as a reusable, falsifiable, comparison-over-time
 probe anywhere — proceeding is justified.
 
---------------------------------------------------------------------------
-REJECTED CANDIDATES (considered, not selected)
---------------------------------------------------------------------------
+### REJECTED CANDIDATES (considered, not selected)
 - background_service_runs — explicitly named in the brief itself as
   heavily confounded by OEM/Doze/process-lifecycle behavior. Not selected,
   per the brief's own instruction that this is a poor fit for experiment
@@ -343,10 +327,8 @@ REJECTED CANDIDATES (considered, not selected)
   brief ("Network calls from Pulse itself: 0 ... skip network-availability
   probes in experiment 001"). Not considered further.
 
-================================================================================
 6. ENVIRONMENT GAPS (FACT log, relevant to Phase 1 only — not blocking
-   this Phase 0 deliverable)
-================================================================================
+#    this Phase 0 deliverable)
 
 FACT — no Android emulator binary or AVD is currently configured in this
   environment; only SDK platform-tools/build-tools/cmdline-tools exist.
@@ -379,9 +361,7 @@ RESOLVED (2026-08-13) — R3's second, different-OEM device is now
   emulator/AVD gap noted above and the "no second device" gap named as
   R3's blocker in Section 7/8 below.
 
-================================================================================
-7. REPRODUCIBILITY (Section 10)
-================================================================================
+## 7. REPRODUCIBILITY (Section 10)
 R1 (2026-08-13, first session — see history below):
   probe_storage_write: PASS x3 (test run, pulse-run x2), FAIL x1 on the
     deliberate unwritable-path case. probe_settings_persist: PASS x2
@@ -478,9 +458,7 @@ Reproducibility achieved: R4 for both probes, both PASS and FAIL
   by R4 and remains open. See the caveats above on what each run does
   and does not generalize to.
 
-================================================================================
-8. FALSIFICATION REPORT (Section 13 deliverable)
-================================================================================
+## 8. FALSIFICATION REPORT (Section 13 deliverable)
 
 QUESTION:
 Do behavioral probes for storage-write and settings-provider-persist
@@ -611,7 +589,6 @@ RECOMMENDED NEXT EXPERIMENT (open item, not scheduled):
      dependency-budget grounds, not on scientific merit. Same status:
      open, not scheduled.
 
-================================================================================
 PHASE 1 CLOSED (2026-08-13).
 
 Conclusion stands as SUPPORTED (see Section 8). The R3 residual caveat
@@ -622,14 +599,10 @@ Experiment 001 to be considered complete. R4 (2026-08-13, Samsung Galaxy
 A54) added a same-OEM physical-device data point but is a same-OEM
 model, not a different-OEM device, so it does not close this item; the
 item remains open, unchanged. No other items are pending on this phase.
-================================================================================
-END OF PHASE 1 DELIVERABLE.
-================================================================================
+## END OF PHASE 1 DELIVERABLE.
 
-================================================================================
 9. POST-CLOSURE FIX LOG (bug fixes found after Phase 1 closure -- does
-   not reopen the Section 8 conclusion; PASS/FAIL logic unaffected)
-================================================================================
+#    not reopen the Section 8 conclusion; PASS/FAIL logic unaffected)
 
 FACT (2026-08-14) -- Autopsy Experiment #001 (an external, bounded
   reconstruction exercise; see autopsy_experiment_001_findings.txt one
@@ -659,14 +632,10 @@ DECISION (2026-08-14) -- fix scoped to probe_settings_persist's
   an extended assertion on the existing live FAIL-detection test
   (tests/test_probes_live.py) both now assert the corrected wording.
 
-================================================================================
-
-================================================================================
-10. PERIODIC RE-CHECK LOG (manual-trigger only; see pulse/README.txt
+10. PERIODIC RE-CHECK LOG (manual-trigger only; see pulse/README.md
     "RE-CHECK LATER" for how to invoke -- not a scheduled or
     background process, entropy budget's "Background processes: 0" is
-    unaffected)
-================================================================================
+#     unaffected)
 
 DECISION (2026-08-14) -- Pulse's own hypothesis includes being
   comparable over time, but R0-R4 were all collected within one short
